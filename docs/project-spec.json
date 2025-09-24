@@ -1,0 +1,1002 @@
+{
+  "project": {
+    "name": "AutoMedia",
+    "version": "1.0.0",
+    "description": "Intelligent Twitter Content Management System with AI-powered generation and multi-platform expansion capabilities",
+    "mission": "Revolutionize social media content management through AI-driven automation, multi-platform data collection, and intelligent content generation",
+    "targetPlatforms": ["Twitter (MVP)", "Xiaohongshu", "Facebook", "Instagram", "TikTok"],
+    "launchDate": "2024-12-01",
+    "mvpTimeline": "4 weeks"
+  },
+  "technicalArchitecture": {
+    "frontend": {
+      "framework": "React 18 + TypeScript",
+      "styling": "Tailwind CSS + Headless UI",
+      "stateManagement": "Zustand + React Query",
+      "routing": "React Router v6",
+      "testing": "Vitest + React Testing Library + Playwright",
+      "buildTool": "Vite",
+      "mobileOptimization": {
+        "responsiveStrategy": "mobile-first",
+        "targetDevices": ["mobile", "tablet", "desktop"],
+        "breakpoints": {
+          "mobile": "<768px",
+          "tablet": "768px-1199px",
+          "desktop": "≥1200px"
+        },
+        "touchOptimization": true,
+        "pwaSupport": true
+      }
+    },
+    "backend": {
+      "framework": "Node.js + Express.js + TypeScript",
+      "apiStyle": "RESTful + WebSocket for real-time updates",
+      "authentication": "JWT + OAuth2 for platform integrations",
+      "rateLimiting": "Express-rate-limit with Redis backend",
+      "fileUpload": "Multer + Cloudinary",
+      "logging": "Winston + Morgan",
+      "testing": "Jest + Supertest",
+      "documentation": "Swagger/OpenAPI"
+    },
+    "database": {
+      "primary": "MongoDB 6.0+ with Mongoose ODM",
+      "cache": "Redis 7.0+ for session management and data caching",
+      "vectorSearch": "MongoDB Atlas Vector Search for content similarity",
+      "dataModeling": "Document-based with embedded references"
+    },
+    "aiIntegration": {
+      "providers": ["OpenAI", "Google Gemini", "DeepSeek", "Claude", "Ollama"],
+      "fallbackStrategy": "Multi-provider with automatic failover",
+      "costOptimization": "Model routing based on task complexity",
+      "localProcessing": "Ollama for sensitive data processing",
+      "apiManagement": "Centralized API key management with rotation"
+    },
+    "deployment": {
+      "containerization": "Docker + Docker Compose",
+      "orchestration": "Kubernetes (EKS/GKE)",
+      "ciCd": "GitHub Actions",
+      "monitoring": "Prometheus + Grafana + ELK Stack",
+      "environment": "Development → Staging → Production",
+      "scalability": "Horizontal scaling with load balancing"
+    },
+    "platformAdapters": {
+      "architecture": "Plugin-based adapter system",
+      "baseInterface": "IPlatformAdapter",
+      "implementedAdapters": ["TwitterAdapter"],
+      "plannedAdapters": ["XiaohongshuAdapter", "FacebookAdapter", "InstagramAdapter", "TikTokAdapter"],
+      "dataStandardization": "Unified content schema across platforms"
+    }
+  },
+  "responsiveDesignSpecs": {
+    "designSystem": {
+      "colorPalette": {
+        "primary": "#1E3A8A",
+        "secondary": "#06B6D4",
+        "accent": "#F59E0B",
+        "success": "#10B981",
+        "error": "#EF4444",
+        "warning": "#F59E0B",
+        "background": "#F8FAFC",
+        "surface": "#FFFFFF",
+        "text": {
+          "primary": "#1F2937",
+          "secondary": "#6B7280",
+          "disabled": "#9CA3AF"
+        }
+      },
+      "typography": {
+        "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+        "fontSize": {
+          "xs": "0.75rem",
+          "sm": "0.875rem",
+          "base": "1rem",
+          "lg": "1.125rem",
+          "xl": "1.25rem",
+          "2xl": "1.5rem",
+          "3xl": "1.875rem",
+          "4xl": "2.25rem"
+        },
+        "fontWeight": {
+          "normal": "400",
+          "medium": "500",
+          "semibold": "600",
+          "bold": "700"
+        },
+        "lineHeight": {
+          "tight": "1.25",
+          "normal": "1.5",
+          "relaxed": "1.75"
+        }
+      },
+      "spacing": {
+        "unit": "0.25rem",
+        "scale": [0, 1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64]
+      },
+      "borderRadius": {
+        "sm": "0.25rem",
+        "md": "0.375rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+        "full": "9999px"
+      },
+      "shadows": {
+        "sm": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "md": "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+        "lg": "0 10px 15px -3px rgb(0 0 0 / 0.1)",
+        "xl": "0 20px 25px -5px rgb(0 0 0 / 0.1)"
+      }
+    },
+    "components": {
+      "layout": {
+        "header": {
+          "height": "64px",
+          "mobileHeight": "56px",
+          "background": "surface",
+          "shadow": "md",
+          "zIndex": "50"
+        },
+        "sidebar": {
+          "width": "280px",
+          "mobileWidth": "240px",
+          "collapsedWidth": "64px",
+          "background": "surface",
+          "borderRight": "1px solid",
+          "borderColor": "gray.200"
+        },
+        "mainContent": {
+          "padding": "24px",
+          "mobilePadding": "16px",
+          "maxWidth": "1440px",
+          "margin": "0 auto"
+        },
+        "footer": {
+          "height": "48px",
+          "background": "surface",
+          "borderTop": "1px solid",
+          "borderColor": "gray.200"
+        }
+      },
+      "navigation": {
+        "desktopNav": {
+          "orientation": "horizontal",
+          "items": ["Dashboard", "Data Collection", "AI Generation", "Material Library", "Settings"],
+          "iconSize": "24px",
+          "fontSize": "base"
+        },
+        "mobileNav": {
+          "orientation": "vertical",
+          "items": ["Home", "Collect", "Generate", "Library", "Profile"],
+          "iconSize": "24px",
+          "fontSize": "sm",
+          "position": "fixed",
+          "bottom": "0",
+          "left": "0",
+          "right": "0",
+          "height": "72px",
+          "background": "surface",
+          "borderTop": "1px solid",
+          "borderColor": "gray.200"
+        }
+      },
+      "cards": {
+        "default": {
+          "padding": "24px",
+          "borderRadius": "lg",
+          "shadow": "sm",
+          "background": "surface",
+          "border": "1px solid",
+          "borderColor": "gray.200"
+        },
+        "hover": {
+          "transform": "scale(1.02)",
+          "shadow": "md",
+          "transition": "all 0.2s ease"
+        },
+        "interactive": {
+          "cursor": "pointer",
+          "hover": {
+            "shadow": "lg",
+            "transform": "translateY(-2px)"
+          }
+        }
+      },
+      "buttons": {
+        "primary": {
+          "backgroundColor": "primary",
+          "color": "white",
+          "padding": "12px 24px",
+          "borderRadius": "lg",
+          "fontSize": "base",
+          "fontWeight": "medium",
+          "hover": {
+            "backgroundColor": "darkblue"
+          },
+          "disabled": {
+            "backgroundColor": "gray.400",
+            "cursor": "not-allowed"
+          }
+        },
+        "secondary": {
+          "backgroundColor": "transparent",
+          "color": "primary",
+          "border": "2px solid",
+          "borderColor": "primary",
+          "padding": "10px 22px",
+          "borderRadius": "lg",
+          "fontSize": "base",
+          "fontWeight": "medium",
+          "hover": {
+            "backgroundColor": "primary",
+            "color": "white"
+          }
+        },
+        "mobile": {
+          "padding": "16px 24px",
+          "fontSize": "lg",
+          "minHeight": "48px",
+          "touchTarget": "minimum 44px"
+        }
+      },
+      "forms": {
+        "input": {
+          "padding": "12px 16px",
+          "borderRadius": "lg",
+          "border": "1px solid",
+          "borderColor": "gray.300",
+          "fontSize": "base",
+          "focus": {
+            "outline": "2px solid",
+            "outlineColor": "primary",
+            "outlineOffset": "2px"
+          }
+        },
+        "mobileInput": {
+          "padding": "16px",
+          "fontSize": "lg",
+          "minHeight": "48px"
+        },
+        "select": {
+          "padding": "12px 40px 12px 16px",
+          "borderRadius": "lg",
+          "border": "1px solid",
+          "borderColor": "gray.300",
+          "fontSize": "base",
+          "appearance": "none",
+          "backgroundImage": "url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\"%3E%3Cpath fill=\"%231F2937\" d=\"M4.22 6.22a.75.75 0 0 1 1.06 0L8 9.94l2.72-3.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06z\"/%3E%3C/svg%3E')",
+          "backgroundRepeat": "no-repeat",
+          "backgroundPosition": "right 12px center"
+        }
+      }
+    },
+    "layouts": {
+      "desktop": {
+        "gridTemplateColumns": "280px 1fr 320px",
+        "gap": "24px",
+        "padding": "24px"
+      },
+      "tablet": {
+        "gridTemplateColumns": "240px 1fr",
+        "gap": "16px",
+        "padding": "16px"
+      },
+      "mobile": {
+        "gridTemplateColumns": "1fr",
+        "gap": "16px",
+        "padding": "16px 12px"
+      }
+    },
+    "performance": {
+      "mobileOptimizations": {
+        "imageOptimization": "WebP format with lazy loading",
+        "codeSplitting": "Route-based and component-based",
+        "caching": "Service worker for PWA functionality",
+        "touchOptimization": "44px minimum touch targets",
+        "fontLoading": "Font-display: swap for better loading",
+        "viewportOptimization": "Meta viewport tags for mobile"
+      },
+      "accessibility": {
+        "contrastRatio": "Minimum 4.5:1 for normal text",
+        "screenReader": "ARIA labels and semantic HTML",
+        "keyboardNavigation": "Full keyboard support",
+        "focusManagement": "Visible focus indicators",
+        "reducedMotion": "Respects user motion preferences"
+      }
+    }
+  },
+  "componentStructure": {
+    "pages": [
+      {
+        "name": "Dashboard",
+        "path": "/",
+        "components": ["DashboardLayout", "StatsCards", "RecentActivity", "QuickActions"],
+        "responsive": true,
+        "mobileComponent": "MobileDashboard"
+      },
+      {
+        "name": "DataCollection",
+        "path": "/collection",
+        "components": ["CollectionDashboard", "TwitterCollector", "UserMonitor", "TrendTracker"],
+        "responsive": true,
+        "mobileComponent": "MobileCollection"
+      },
+      {
+        "name": "AIGeneration",
+        "path": "/ai-generation",
+        "components": ["GenerationWorkspace", "ModelSelector", "AgentConfig", "ContentPreview"],
+        "responsive": true,
+        "mobileComponent": "MobileGeneration"
+      },
+      {
+        "name": "MaterialLibrary",
+        "path": "/library",
+        "components": ["LibraryGrid", "SearchFilters", "ContentCard", "BulkActions"],
+        "responsive": true,
+        "mobileComponent": "MobileLibrary"
+      },
+      {
+        "name": "UserTopics",
+        "path": "/topics",
+        "components": ["TopicManager", "TopicEditor", "TopicAnalytics", "RecommendationEngine"],
+        "responsive": true,
+        "mobileComponent": "MobileTopics"
+      }
+    ],
+    "sharedComponents": [
+      {
+        "name": "Navigation",
+        "variants": ["DesktopNavigation", "MobileNavigation"],
+        "responsive": true
+      },
+      {
+        "name": "Header",
+        "variants": ["DesktopHeader", "MobileHeader"],
+        "responsive": true
+      },
+      {
+        "name": "Card",
+        "variants": ["ContentCard", "StatsCard", "ActionCard"],
+        "responsive": true
+      },
+      {
+        "name": "Button",
+        "variants": ["PrimaryButton", "SecondaryButton", "IconButton"],
+        "responsive": true
+      },
+      {
+        "name": "Modal",
+        "variants": ["StandardModal", "FullscreenModal"],
+        "responsive": true
+      },
+      {
+        "name": "Form",
+        "variants": ["StandardForm", "CompactForm"],
+        "responsive": true
+      }
+    ],
+    "platformSpecific": [
+      {
+        "name": "TwitterAdapterUI",
+        "components": ["TweetCard", "TwitterUserCard", "TrendDisplay"],
+        "responsive": true
+      }
+    ]
+  },
+  "apiDesign": {
+    "authentication": {
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "description": "User authentication",
+          "request": { "email": "string", "password": "string" },
+          "response": { "token": "string", "user": "object" }
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "description": "Refresh access token",
+          "request": { "refreshToken": "string" },
+          "response": { "token": "string" }
+        }
+      ]
+    },
+    "dataCollection": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/collection/twitter/status",
+          "description": "Get Twitter API connection status",
+          "response": { "status": "string", "rateLimit": "object" }
+        },
+        {
+          "method": "POST",
+          "path": "/api/collection/twitter/users",
+          "description": "Add Twitter users to monitor",
+          "request": { "usernames": "string[]" },
+          "response": { "success": "boolean", "added": "number" }
+        },
+        {
+          "method": "GET",
+          "path": "/api/collection/twitter/tweets",
+          "description": "Get collected tweets",
+          "queryParams": ["limit", "offset", "startDate", "endDate"],
+          "response": { "tweets": "array", "pagination": "object" }
+        },
+        {
+          "method": "GET",
+          "path": "/api/collection/trends",
+          "description": "Get trending topics",
+          "queryParams": ["location", "limit"],
+          "response": { "trends": "array", "timestamp": "string" }
+        }
+      ]
+    },
+    "aiGeneration": {
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/ai/generate",
+          "description": "Generate content using AI",
+          "request": { "prompt": "string", "model": "string", "agent": "string" },
+          "response": { "content": "string", "metadata": "object" }
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/models",
+          "description": "Get available AI models",
+          "response": { "models": "array" }
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/agents",
+          "description": "Get configured agents",
+          "response": { "agents": "array" }
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/agents",
+          "description": "Create new agent",
+          "request": { "name": "string", "systemPrompt": "string", "config": "object" },
+          "response": { "agent": "object" }
+        }
+      ]
+    },
+    "contentManagement": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/content",
+          "description": "Get content library",
+          "queryParams": ["search", "tags", "platform", "limit", "offset"],
+          "response": { "content": "array", "pagination": "object" }
+        },
+        {
+          "method": "POST",
+          "path": "/api/content",
+          "description": "Save generated content",
+          "request": { "content": "string", "source": "string", "metadata": "object" },
+          "response": { "id": "string", "status": "string" }
+        },
+        {
+          "method": "PUT",
+          "path": "/api/content/:id",
+          "description": "Update content",
+          "request": { "content": "string", "metadata": "object" },
+          "response": { "success": "boolean" }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/content/:id",
+          "description": "Delete content",
+          "response": { "success": "boolean" }
+        }
+      ]
+    },
+    "userTopics": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/api/topics",
+          "description": "Get user topics",
+          "response": { "topics": "array" }
+        },
+        {
+          "method": "POST",
+          "path": "/api/topics",
+          "description": "Create new topic",
+          "request": { "name": "string", "keywords": "string[]", "weight": "number" },
+          "response": { "topic": "object" }
+        },
+        {
+          "method": "PUT",
+          "path": "/api/topics/:id",
+          "description": "Update topic",
+          "request": { "name": "string", "keywords": "string[]", "weight": "number" },
+          "response": { "topic": "object" }
+        },
+        {
+          "method": "DELETE",
+          "path": "/api/topics/:id",
+          "description": "Delete topic",
+          "response": { "success": "boolean" }
+        },
+        {
+          "method": "GET",
+          "path": "/api/topics/recommendations",
+          "description": "Get topic recommendations",
+          "response": { "recommendations": "array" }
+        }
+      ]
+    },
+    "websocket": {
+      "endpoints": [
+        {
+          "event": "tweet:collected",
+          "description": "Real-time tweet collection updates",
+          "data": { "tweet": "object", "source": "string" }
+        },
+        {
+          "event": "trend:updated",
+          "description": "Trending topics updates",
+          "data": { "trends": "array", "location": "string" }
+        },
+        {
+          "event": "generation:progress",
+          "description": "AI generation progress updates",
+          "data": { "progress": "number", "status": "string" }
+        }
+      ]
+    }
+  },
+  "databaseSchema": {
+    "users": {
+      "collection": "users",
+      "fields": {
+        "_id": "ObjectId",
+        "email": { "type": "string", "unique": true, "required": true },
+        "password": { "type": "string", "required": true },
+        "profile": {
+          "firstName": "string",
+          "lastName": "string",
+          "avatar": "string",
+          "preferences": {
+            "language": "string",
+            "timezone": "string",
+            "notifications": "boolean"
+          }
+        },
+        "settings": {
+          "defaultAIModel": "string",
+          "defaultAgent": "string",
+          "theme": "string"
+        },
+        "apiKeys": [{
+          "provider": "string",
+          "key": "string",
+          "encrypted": true
+        }],
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["email", "createdAt"]
+    },
+    "platforms": {
+      "collection": "platforms",
+      "fields": {
+        "_id": "ObjectId",
+        "name": { "type": "string", "required": true },
+        "type": { "type": "string", "enum": ["twitter", "xiaohongshu", "facebook", "instagram", "tiktok"] },
+        "config": {
+          "apiKey": "string",
+          "apiSecret": "string",
+          "accessToken": "string",
+          "webhookUrl": "string"
+        },
+        "status": { "type": "string", "enum": ["active", "inactive", "error"] },
+        "rateLimit": {
+          "remaining": "number",
+          "reset": "Date"
+        },
+        "userId": { "type": "ObjectId", "ref": "users" },
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["userId", "type", "status"]
+    },
+    "content": {
+      "collection": "content",
+      "fields": {
+        "_id": "ObjectId",
+        "platform": { "type": "string", "required": true },
+        "platformId": { "type": "string", "unique": true, "sparse": true },
+        "type": { "type": "string", "enum": ["tweet", "post", "video", "image", "story"] },
+        "author": {
+          "id": "string",
+          "username": "string",
+          "displayName": "string",
+          "avatar": "string",
+          "verified": "boolean"
+        },
+        "content": {
+          "text": "string",
+          "media": [{
+            "url": "string",
+            "type": "string",
+            "altText": "string"
+          }],
+          "links": [{
+            "url": "string",
+            "title": "string",
+            "description": "string"
+          }]
+        },
+        "metadata": {
+          "engagement": {
+            "likes": "number",
+            "retweets": "number",
+            "replies": "number",
+            "views": "number"
+          },
+          "sentiment": {
+            "score": "number",
+            "label": "string"
+          },
+          "topics": ["string"],
+          "hashtags": ["string"],
+          "mentions": ["string"],
+          "language": "string",
+          "location": "string"
+        },
+        "aiGenerated": { "type": "boolean", "default": false },
+        "source": { "type": "ObjectId", "ref": "users" },
+        "tags": ["string"],
+        "collections": ["ObjectId"],
+        "publishedAt": "Date",
+        "collectedAt": { "type": "Date", "default": "Date.now" },
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["platform", "platformId", "author.id", "collectedAt", "tags", "aiGenerated"]
+    },
+    "topics": {
+      "collection": "topics",
+      "fields": {
+        "_id": "ObjectId",
+        "userId": { "type": "ObjectId", "ref": "users", "required": true },
+        "name": { "type": "string", "required": true },
+        "description": "string",
+        "keywords": ["string"],
+        "weight": { "type": "number", "default": 1 },
+        "category": "string",
+        "isActive": { "type": "boolean", "default": true },
+        "lastUpdated": "Date",
+        "contentCount": { "type": "number", "default": 0 },
+        "settings": {
+          "updateFrequency": "string",
+          "notificationEnabled": "boolean",
+          "autoCollect": "boolean"
+        },
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["userId", "category", "isActive", "weight"]
+    },
+    "agents": {
+      "collection": "agents",
+      "fields": {
+        "_id": "ObjectId",
+        "userId": { "type": "ObjectId", "ref": "users", "required": true },
+        "name": { "type": "string", "required": true },
+        "description": "string",
+        "type": { "type": "string", "enum": ["content", "analysis", "marketing", "technical", "social"] },
+        "systemPrompt": { "type": "string", "required": true },
+        "config": {
+          "model": "string",
+          "temperature": "number",
+          "maxTokens": "number",
+          "outputFormat": "string",
+          "constraints": ["string"]
+        },
+        "isDefault": { "type": "boolean", "default": false },
+        "usageCount": { "type": "number", "default": 0 },
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["userId", "type", "isDefault"]
+    },
+    "generations": {
+      "collection": "generations",
+      "fields": {
+        "_id": "ObjectId",
+        "userId": { "type": "ObjectId", "ref": "users", "required": true },
+        "agentId": { "type": "ObjectId", "ref": "agents" },
+        "prompt": "string",
+        "input": {
+          "content": "string",
+          "context": "string",
+          "parameters": "object"
+        },
+        "output": {
+          "content": "string",
+          "metadata": "object",
+          "sources": ["ObjectId"]
+        },
+        "model": { "type": "string", "required": true },
+        "provider": { "type": "string", "required": true },
+        "tokens": {
+          "input": "number",
+          "output": "number",
+          "total": "number"
+        },
+        "cost": { "type": "number", "default": 0 },
+        "duration": "number",
+        "status": { "type": "string", "enum": ["pending", "processing", "completed", "failed"] },
+        "error": "string",
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["userId", "agentId", "status", "createdAt"]
+    },
+    "collections": {
+      "collection": "collections",
+      "fields": {
+        "_id": "ObjectId",
+        "userId": { "type": "ObjectId", "ref": "users", "required": true },
+        "name": { "type": "string", "required": true },
+        "description": "string",
+        "type": { "type": "string", "enum": ["manual", "auto", "smart"] },
+        "rules": {
+          "criteria": ["string"],
+          "conditions": "object",
+          "autoAdd": "boolean"
+        },
+        "contentCount": { "type": "number", "default": 0 },
+        "isPublic": { "type": "boolean", "default": false },
+        "createdAt": "Date",
+        "updatedAt": "Date"
+      },
+      "indexes": ["userId", "type", "isPublic"]
+    }
+  },
+  "implementationPlan": {
+    "mvp": {
+      "name": "MVP - Twitter Core Functionality",
+      "duration": "4 weeks",
+      "phases": [
+        {
+          "name": "Week 1 - Foundation",
+          "tasks": [
+            "Project setup and basic structure",
+            "Database schema implementation",
+            "User authentication system",
+            "Basic responsive layout"
+          ],
+          "deliverables": [
+            "Project repository with basic structure",
+            "Database models and migrations",
+            "JWT authentication system",
+            "Basic responsive UI framework"
+          ]
+        },
+        {
+          "name": "Week 2 - Twitter Integration",
+          "tasks": [
+            "Twitter API integration",
+            "Data collection pipeline",
+            "Basic content storage",
+            "Real-time updates with WebSocket"
+          ],
+          "deliverables": [
+            "Twitter data collector service",
+            "Tweet storage and retrieval system",
+            "Real-time tweet updates",
+            "Basic data validation"
+          ]
+        },
+        {
+          "name": "Week 3 - AI Generation",
+          "tasks": [
+            "AI model integration",
+            "Basic content generation",
+            "Agent configuration system",
+            "Content preview functionality"
+          ],
+          "deliverables": [
+            "AI content generation service",
+            "Basic agent templates",
+            "Content generation UI",
+            "Output validation system"
+          ]
+        },
+        {
+          "name": "Week 4 - User Experience",
+          "tasks": [
+            "User topic management",
+            "Material library",
+            "Mobile optimization",
+            "Basic analytics dashboard"
+          ],
+          "deliverables": [
+            "Topic management system",
+            "Content library with search",
+            "Mobile-optimized interface",
+            "Basic usage analytics"
+          ]
+        }
+      ],
+      "successCriteria": [
+        "Twitter data collection working",
+        "Basic AI content generation functional",
+        "Mobile-responsive interface",
+        "User authentication and management",
+        "Basic content storage and retrieval"
+      ]
+    },
+    "v1": {
+      "name": "V1.0 - Feature Complete",
+      "duration": "8 weeks",
+      "features": [
+        "Complete Twitter functionality",
+        "Multi AI model support",
+        "Custom Agent system",
+        "User personalization",
+        "Advanced responsive design",
+        "Telegram bot integration",
+        "Content analytics",
+        "Advanced filtering and search"
+      ],
+      "successCriteria": [
+        "All MVP features enhanced",
+        "Multi-model AI integration",
+        "Custom agent creation",
+        "Personalized recommendations",
+        "Cross-platform compatibility"
+      ]
+    },
+    "v2": {
+      "name": "V1.5 - Platform Expansion",
+      "duration": "12 weeks",
+      "features": [
+        "Xiaohongshu platform adapter",
+        "Facebook platform adapter",
+        "Cross-platform content analysis",
+        "Unified content management",
+        "Advanced analytics",
+        "Team collaboration features",
+        "Advanced AI capabilities"
+      ],
+      "successCriteria": [
+        "Multi-platform data collection",
+        "Cross-platform content comparison",
+        "Advanced analytics dashboard",
+        "Team management features"
+      ]
+    },
+    "testing": {
+      "unit": {
+        "framework": "Jest/Vitest",
+        "coverage": "80% minimum",
+        "focus": "Core business logic"
+      },
+      "integration": {
+        "framework": "Supertest",
+        "coverage": "API endpoints",
+        "focus": "Data flow validation"
+      },
+      "e2e": {
+        "framework": "Playwright",
+        "coverage": "Critical user journeys",
+        "focus": "Mobile and desktop compatibility"
+      },
+      "performance": {
+        "tools": ["Lighthouse", "WebPageTest"],
+        "targets": {
+          "mobileLoadTime": "<3s",
+          "desktopLoadTime": "<2s",
+          "apiResponseTime": "<200ms"
+        }
+      }
+    },
+    "deployment": {
+      "environments": {
+        "development": "Local Docker setup",
+        "staging": "Cloud deployment with test data",
+        "production": "Production-grade cloud infrastructure"
+      },
+      "ciCd": {
+        "triggers": ["push to main", "pull requests", "tags"],
+        "stages": ["build", "test", "security", "deploy"],
+        "tools": "GitHub Actions"
+      },
+      "monitoring": {
+        "metrics": ["performance", "error rates", "user activity", "API usage"],
+        "alerting": ["critical errors", "performance degradation", "security issues"],
+        "tools": "Prometheus + Grafana"
+      }
+    }
+  },
+  "riskManagement": {
+    "technical": [
+      {
+        "risk": "Twitter API rate limiting",
+        "probability": "high",
+        "impact": "medium",
+        "mitigation": [
+          "Implement caching strategies",
+          "Use multiple API sources",
+          "Add rate limit monitoring",
+          "Graceful degradation"
+        ]
+      },
+      {
+        "risk": "AI API cost overruns",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "Implement usage limits",
+          "Model routing optimization",
+          "Cost monitoring and alerts",
+          "Local model fallback"
+        ]
+      },
+      {
+        "risk": "Database performance issues",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "Proper indexing strategy",
+          "Query optimization",
+          "Caching layer",
+          "Database scaling strategy"
+        ]
+      }
+    ],
+    "compliance": [
+      {
+        "risk": "Data privacy regulations",
+        "probability": "high",
+        "impact": "high",
+        "mitigation": [
+          "GDPR/CCPA compliance",
+          "Data encryption at rest and in transit",
+          "User consent management",
+          "Regular security audits"
+        ]
+      },
+      {
+        "risk": "Platform terms of service",
+        "probability": "medium",
+        "impact": "high",
+        "mitigation": [
+          "Terms of service review",
+          "Rate limit compliance",
+          "Content moderation",
+          "Legal consultation"
+        ]
+      }
+    ]
+  },
+  "successMetrics": {
+    "technical": {
+      "apiResponseTime": { "target": "<200ms", "unit": "milliseconds" },
+      "systemUptime": { "target": "99.9%", "unit": "percentage" },
+      "mobileLoadTime": { "target": "<3s", "unit": "seconds" },
+      "testCoverage": { "target": "80%", "unit": "percentage" },
+      "errorRate": { "target": "<1%", "unit": "percentage" }
+    },
+    "business": {
+      "userAcquisition": { "target": "1000", "unit": "users/month" },
+      "userRetention": { "target": "60%", "unit": "percentage" },
+      "contentGenerationSuccess": { "target": "95%", "unit": "percentage" },
+      "platformIntegrationSuccess": { "target": "90%", "unit": "percentage" }
+    },
+    "userExperience": {
+      "mobileUsabilityScore": { "target": "90", "unit": "Lighthouse score" },
+      "userSatisfaction": { "target": "4.5", "unit": "out of 5" },
+      "featureAdoption": { "target": "70%", "unit": "percentage" },
+      "supportTicketResolution": { "target": "24h", "unit": "hours" }
+    }
+  }
+}

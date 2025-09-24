@@ -1,0 +1,368 @@
+import { TwitterApi } from 'twitter-api-v2';
+import { Content, User } from '../models';
+import { cacheData, getCachedData, deleteCache } from '../config/redis';
+import { TwitterApiResponse, TrendingTopic } from '../types';
+
+export class TwitterService {
+  private client: TwitterApi;
+  private appClient: TwitterApi;
+
+  constructor() {
+    this.appClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN || '');
+
+    // Initialize with user tokens if available
+    const accessToken = process.env.TWITTER_ACCESS_TOKEN;
+    const accessSecret = process.env.TWITTER_ACCESS_SECRET;
+
+    if (accessToken && accessSecret) {
+      this.client = new TwitterApi({
+        appKey: process.env.TWITTER_API_KEY || '',
+        appSecret: process.env.TWITTER_API_SECRET || '',
+        accessToken,
+        accessSecret,
+      });
+    } else {
+      this.client = this.appClient;
+    }
+  }
+
+  async testConnection(): Promise<{ success: boolean; message: string; rateLimit?: any }> {
+    try {
+      const response = await this.appClient.v2.get('tweets/sample/stream', {
+        'tweet.fields': 'id,text,created_at,author_id,public_metrics,context_annotations,entities',
+      });
+
+      return {
+        success: true,
+        message: 'Twitter API connection successful',
+        rateLimit: response.rateLimit,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Twitter API connection failed: ${error}`,
+      };
+    }
+  }
+
+  async getUserByUsername(username: string): Promise<any> {
+    const cacheKey = `twitter:user:${username}`;
+    const cached = await getCachedData(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const user = await this.appClient.v2.userByUsername(username, {
+        'user.fields': 'id,name,username,profile_image_url,verified,public_metrics,created_at,description',
+      });
+
+      if (user.data) {
+        await cacheData(cacheKey, user.data, 3600); // Cache for 1 hour
+        return user.data;
+      }
+
+      throw new Error('User not found');
+    } catch (error) {
+      throw new Error(`Failed to get Twitter user: ${error}`);
+    }
+  }
+
+  async getUserTweets(
+    userId: string,
+    options: {
+      maxResults?: number;
+      startTime?: Date;
+      endTime?: Date;
+      excludeRetweets?: boolean;
+    } = {}
+  ): Promise<any[]> {
+    const {
+      maxResults = 100,
+      startTime,
+      endTime,
+      excludeRetweets = false,
+    } = options;
+
+    const cacheKey = `twitter:tweets:${userId}:${maxResults}:${startTime?.toISOString()}:${endTime?.toISOString()}`;
+    const cached = await getCachedData(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const query: any = {
+        'tweet.fields': 'id,text,created_at,author_id,public_metrics,context_annotations,entities,attachments,referenced_tweets',
+        'user.fields': 'id,name,username,profile_image_url,verified',
+        'media.fields': 'url,preview_image_url,type,alt_text',
+        'expansions': 'author_id,attachments.media_keys,referenced_tweets.id',
+        max_results: maxResults,
+      };
+
+      if (startTime) query.start_time = startTime.toISOString();
+      if (endTime) query.end_time = endTime.toISOString();
+
+      const response = await this.appClient.v2.userTimeline(userId, query);
+
+      if (response.data?.data) {
+        // Process and transform tweets
+        const tweets = await this.processTweetsResponse(response);
+
+        // Cache for 15 minutes
+        await cacheData(cacheKey, tweets, 900);
+
+        return tweets;
+      }
+
+      return [];
+    } catch (error) {
+      throw new Error(`Failed to get user tweets: ${error}`);
+    }
+  }
+
+  async searchTweets(
+    query: string,
+    options: {
+      maxResults?: number;
+      startTime?: Date;
+      endTime?: Date;
+      language?: string;
+      resultType?: 'recent' | 'popular' | 'mixed';
+    } = {}
+  ): Promise<any[]> {
+    const {
+      maxResults = 100,
+      startTime,
+      endTime,
+      language = 'en',
+      resultType = 'recent',
+    } = options;
+
+    const cacheKey = `twitter:search:${encodeURIComponent(query)}:${maxResults}:${startTime?.toISOString()}:${endTime?.toISOString()}`;
+    const cached = await getCachedData(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const searchQuery: any = {
+        query,
+        max_results: maxResults,
+        'tweet.fields': 'id,text,created_at,author_id,public_metrics,context_annotations,entities,attachments,referenced_tweets',
+        'user.fields': 'id,name,username,profile_image_url,verified',
+        'media.fields': 'url,preview_image_url,type,alt_text',
+        'expansions': 'author_id,attachments.media_keys,referenced_tweets.id',
+      };
+
+      if (startTime) searchQuery.start_time = startTime.toISOString();
+      if (endTime) searchQuery.end_time = endTime.toISOString();
+
+      const response = await this.appClient.v2.search(searchQuery);
+
+      if (response.data?.data) {
+        const tweets = await this.processTweetsResponse(response);
+
+        // Cache for 15 minutes
+        await cacheData(cacheKey, tweets, 900);
+
+        return tweets;
+      }
+
+      return [];
+    } catch (error) {
+      throw new Error(`Failed to search tweets: ${error}`);
+    }
+  }
+
+  async getTrendingTopics(woeId: number = 1): Promise<TrendingTopic[]> {
+    const cacheKey = `twitter:trends:${woeId}`;
+    const cached = await getCachedData(cacheKey);
+
+    if (cached) {
+      return cached;
+    }
+
+    try {
+      const response = await this.appClient.v1.getTrendsPlace(woeId);
+
+      if (response.data && response.data.length > 0) {
+        const trends = response.data[0].trends.map(trend => ({
+          name: trend.name,
+          url: trend.url,
+          promoted_content: trend.promoted_content,
+          query: trend.query,
+          tweet_volume: trend.tweet_volume,
+        }));
+
+        // Cache for 15 minutes
+        await cacheData(cacheKey, trends, 900);
+
+        return trends;
+      }
+
+      return [];
+    } catch (error) {
+      throw new Error(`Failed to get trending topics: ${error}`);
+    }
+  }
+
+  async monitorUsers(usernames: string[]): Promise<any> {
+    const results = [];
+
+    for (const username of usernames) {
+      try {
+        const user = await this.getUserByUsername(username);
+        const recentTweets = await this.getUserTweets(user.id, {
+          maxResults: 10,
+          excludeRetweets: true,
+        });
+
+        results.push({
+          user,
+          tweets: recentTweets,
+        });
+      } catch (error) {
+        console.error(`Failed to monitor user ${username}:`, error);
+        results.push({
+          username,
+          error: error.message,
+        });
+      }
+    }
+
+    return results;
+  }
+
+  private async processTweetsResponse(response: any): Promise<any[]> {
+    const tweets = [];
+    const users = response.data?.includes?.users || [];
+    const media = response.data?.includes?.media || [];
+
+    for (const tweet of response.data.data) {
+      const author = users.find((u: any) => u.id === tweet.author_id);
+
+      // Get media URLs
+      const tweetMedia = [];
+      if (tweet.attachments && tweet.attachments.media_keys) {
+        for (const mediaKey of tweet.attachments.media_keys) {
+          const mediaItem = media.find((m: any) => m.media_key === mediaKey);
+          if (mediaItem) {
+            tweetMedia.push({
+              url: mediaItem.url || mediaItem.preview_image_url,
+              type: mediaItem.type,
+              altText: mediaItem.alt_text,
+            });
+          }
+        }
+      }
+
+      // Extract links
+      const links = [];
+      if (tweet.entities && tweet.entities.urls) {
+        for (const url of tweet.entities.urls) {
+          links.push({
+            url: url.expanded_url || url.url,
+            title: url.title,
+            description: url.description,
+          });
+        }
+      }
+
+      // Extract hashtags
+      const hashtags = [];
+      if (tweet.entities && tweet.entities.hashtags) {
+        hashtags.push(...tweet.entities.hashtags.map((h: any) => h.tag));
+      }
+
+      // Extract mentions
+      const mentions = [];
+      if (tweet.entities && tweet.entities.mentions) {
+        mentions.push(...tweet.entities.mentions.map((m: any) => m.username));
+      }
+
+      const processedTweet = {
+        platform: 'twitter',
+        platformId: tweet.id,
+        type: 'tweet',
+        author: {
+          id: author?.id || '',
+          username: author?.username || '',
+          displayName: author?.name || '',
+          avatar: author?.profile_image_url || '',
+          verified: author?.verified || false,
+        },
+        content: {
+          text: tweet.text,
+          media: tweetMedia,
+          links,
+        },
+        metadata: {
+          engagement: {
+            likes: tweet.public_metrics?.like_count || 0,
+            retweets: tweet.public_metrics?.retweet_count || 0,
+            replies: tweet.public_metrics?.reply_count || 0,
+            views: tweet.public_metrics?.impression_count || 0,
+          },
+          sentiment: {
+            score: 0, // Will be calculated by sentiment analysis service
+            label: 'neutral',
+          },
+          topics: [],
+          hashtags,
+          mentions,
+          language: tweet.lang || 'en',
+        },
+        publishedAt: new Date(tweet.created_at),
+        collectedAt: new Date(),
+      };
+
+      tweets.push(processedTweet);
+    }
+
+    return tweets;
+  }
+
+  async saveTweetsToDatabase(tweets: any[], userId?: string): Promise<any> {
+    const savedTweets = [];
+
+    for (const tweetData of tweets) {
+      try {
+        // Check if tweet already exists
+        const existingTweet = await Content.findOne({
+          platform: 'twitter',
+          platformId: tweetData.platformId,
+        });
+
+        if (!existingTweet) {
+          const tweet = new Content({
+            ...tweetData,
+            source: userId,
+          });
+
+          await tweet.save();
+          savedTweets.push(tweet);
+        } else {
+          savedTweets.push(existingTweet);
+        }
+      } catch (error) {
+        console.error('Failed to save tweet:', error);
+      }
+    }
+
+    return savedTweets;
+  }
+
+  async getRateLimitStatus(): Promise<any> {
+    try {
+      const rateLimits = await this.appClient.v2.rateLimits();
+      return rateLimits;
+    } catch (error) {
+      throw new Error(`Failed to get rate limit status: ${error}`);
+    }
+  }
+}
+
+export const twitterService = new TwitterService();

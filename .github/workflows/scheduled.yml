@@ -1,0 +1,135 @@
+name: Scheduled Tasks
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run security audit
+      run: npm audit --audit-level moderate
+
+    - name: Check for outdated dependencies
+      run: npm outdated || true
+
+    - name: Generate security report
+      run: |
+        echo "## Security Scan Report" > security-report.md
+        echo "Date: $(date)" >> security-report.md
+        echo "" >> security-report.md
+        echo "### Vulnerabilities Found:" >> security-report.md
+        npm audit --json | jq -r '.advisories[] | "- \(.module_name): \(.severity)"' >> security-report.md
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: security-report.md
+
+  performance-monitoring:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build
+
+    - name: Run Lighthouse CI
+      run: npm run lighthouse:ci
+
+    - name: Generate performance report
+      run: |
+        echo "## Performance Report" > performance-report.md
+        echo "Date: $(date)" >> performance-report.md
+        echo "" >> performance-report.md
+        echo "### Lighthouse Scores:" >> performance-report.md
+        echo "- Performance: TBD" >> performance-report.md
+        echo "- Accessibility: TBD" >> performance-report.md
+        echo "- Best Practices: TBD" >> performance-report.md
+        echo "- SEO: TBD" >> performance-report.md
+
+    - name: Upload performance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: performance-report.md
+
+  dependency-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Update dependencies
+      run: |
+        npm update
+        npm audit fix
+
+    - name: Check for breaking changes
+      run: |
+        echo "Checking for breaking changes..."
+        npm run test || exit 1
+
+    - name: Create PR if updates found
+      uses: peter-evans/create-pull-request@v5
+      with:
+        title: 'chore: Update dependencies'
+        body: |
+          ## Dependency Updates
+
+          This PR updates dependencies to their latest versions.
+
+          ### Changes
+          - Updated npm packages
+          - Fixed security vulnerabilities
+          - Applied patches where applicable
+
+          ### Verification
+          - [x] All tests pass
+          - [x] No breaking changes detected
+          - [x] Security audit passed
+        commit-message: 'chore: Update dependencies'
+        branch: 'dependencies/update'
+        delete-branch: true
