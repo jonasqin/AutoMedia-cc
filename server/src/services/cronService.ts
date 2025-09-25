@@ -53,7 +53,7 @@ export class CronService {
   private async fetchTrendingTopics(): Promise<void> {
     try {
       const locations = [1, 23424977, 44418]; // Global, US, UK
-      const allTrends = [];
+      const allTrends: any[] = [];
 
       for (const location of locations) {
         try {

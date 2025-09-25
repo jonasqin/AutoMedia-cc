@@ -283,8 +283,8 @@ MaterialSchema.index({ expiresAt: 1 });
 
 // Virtual for formatted name
 MaterialSchema.virtual('formattedName').get(function() {
-  return this.content.media && this.content.media.length > 0
-    ? `${this.name} (${this.content.media[0].type})`
+  return this.content?.media && this.content.media.length > 0
+    ? `${this.name} (${this.content.media[0]?.type})`
     : this.name;
 });
 
@@ -295,7 +295,7 @@ MaterialSchema.virtual('isExpired').get(function() {
 
 // Virtual for file size
 MaterialSchema.virtual('fileSize').get(function() {
-  if (this.content.media && this.content.media.length > 0) {
+  if (this.content?.media && this.content.media.length > 0) {
     return this.content.media.reduce((total, media) => total + (media.size || 0), 0);
   }
   return 0;
@@ -303,17 +303,21 @@ MaterialSchema.virtual('fileSize').get(function() {
 
 // Virtual for text length
 MaterialSchema.virtual('textLength').get(function() {
-  return this.content.text ? this.content.text.length : 0;
+  return this.content?.text ? this.content.text.length : 0;
 });
 
 // Virtual for hasVariables
 MaterialSchema.virtual('hasVariables').get(function() {
-  return this.settings.variables && this.settings.variables.length > 0;
+  return this.settings?.variables && this.settings.variables.length > 0;
 });
 
 // Virtual for engagement metrics
 MaterialSchema.virtual('engagementMetrics').get(function() {
-  const { views, downloads, shares, likes } = this.statistics;
+  const stats = this.statistics || {} as any;
+  const views = stats.views || 0;
+  const downloads = stats.downloads || 0;
+  const shares = stats.shares || 0;
+  const likes = stats.likes || 0;
   const total = views + downloads + shares + likes;
   return {
     total,
@@ -324,7 +328,7 @@ MaterialSchema.virtual('engagementMetrics').get(function() {
 
 // Pre-save middleware to handle expiration
 MaterialSchema.pre('save', function(next) {
-  if (this.isModified('type') && this.type === 'template') {
+  if (this.isModified('type') && this.type === 'template' && this.settings) {
     this.settings.isTemplate = true;
   }
   next();
@@ -332,7 +336,7 @@ MaterialSchema.pre('save', function(next) {
 
 // Pre-save middleware to update usage statistics
 MaterialSchema.pre('save', function(next) {
-  if (this.isModified('usage.count') && this.usage.count > 0) {
+  if (this.isModified('usage.count') && this.usage && this.usage.count > 0) {
     this.usage.lastUsedAt = new Date();
   }
   next();

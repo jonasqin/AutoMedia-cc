@@ -334,7 +334,7 @@ ProjectSchema.index({ createdAt: -1 });
 
 // Virtual for project duration
 ProjectSchema.virtual('duration').get(function() {
-  if (this.timeline.startDate && this.timeline.endDate) {
+  if (this.timeline?.startDate && this.timeline?.endDate) {
     return this.timeline.endDate.getTime() - this.timeline.startDate.getTime();
   }
   return 0;
@@ -342,7 +342,7 @@ ProjectSchema.virtual('duration').get(function() {
 
 // Virtual for days remaining
 ProjectSchema.virtual('daysRemaining').get(function() {
-  if (this.timeline.endDate) {
+  if (this.timeline?.endDate) {
     const now = new Date();
     const remaining = this.timeline.endDate.getTime() - now.getTime();
     return Math.max(0, Math.ceil(remaining / (1000 * 60 * 60 * 24)));
@@ -352,20 +352,22 @@ ProjectSchema.virtual('daysRemaining').get(function() {
 
 // Virtual for budget remaining
 ProjectSchema.virtual('budgetRemaining').get(function() {
-  return this.budget.total - this.budget.spent;
+  const budget = this.budget || {} as any;
+  return (budget.total || 0) - (budget.spent || 0);
 });
 
 // Virtual for budget utilization
 ProjectSchema.virtual('budgetUtilization').get(function() {
-  if (this.budget.total > 0) {
-    return (this.budget.spent / this.budget.total) * 100;
+  const budget = this.budget || {} as any;
+  if (budget.total > 0) {
+    return ((budget.spent || 0) / budget.total) * 100;
   }
   return 0;
 });
 
 // Virtual for progress
 ProjectSchema.virtual('progress').get(function() {
-  if (this.timeline.milestones && this.timeline.milestones.length > 0) {
+  if (this.timeline?.milestones && this.timeline.milestones.length > 0) {
     const completed = this.timeline.milestones.filter(m => m.status === 'completed').length;
     return (completed / this.timeline.milestones.length) * 100;
   }
@@ -374,17 +376,18 @@ ProjectSchema.virtual('progress').get(function() {
 
 // Virtual for isOverBudget
 ProjectSchema.virtual('isOverBudget').get(function() {
-  return this.budget.spent > this.budget.total;
+  const budget = this.budget || {} as any;
+  return (budget.spent || 0) > (budget.total || 0);
 });
 
 // Virtual for isOverdue
 ProjectSchema.virtual('isOverdue').get(function() {
-  return this.timeline.endDate && this.timeline.endDate < new Date() && this.status !== 'completed';
+  return this.timeline?.endDate && this.timeline.endDate < new Date() && this.status !== 'completed';
 });
 
 // Virtual for kpiProgress
 ProjectSchema.virtual('kpiProgress').get(function() {
-  if (this.objectives.kpis && this.objectives.kpis.length > 0) {
+  if (this.objectives?.kpis && this.objectives.kpis.length > 0) {
     return this.objectives.kpis.map(kpi => ({
       name: kpi.name,
       target: kpi.target,
@@ -400,7 +403,7 @@ ProjectSchema.virtual('kpiProgress').get(function() {
 
 // Pre-save middleware to validate timeline
 ProjectSchema.pre('save', function(next) {
-  if (this.timeline.startDate && this.timeline.endDate) {
+  if (this.timeline?.startDate && this.timeline?.endDate) {
     if (this.timeline.startDate >= this.timeline.endDate) {
       return next(new Error('End date must be after start date'));
     }
@@ -410,7 +413,7 @@ ProjectSchema.pre('save', function(next) {
 
 // Pre-save middleware to update statistics
 ProjectSchema.pre('save', function(next) {
-  if (this.isModified('statistics')) {
+  if (this.isModified('statistics') && this.statistics) {
     this.statistics.lastUpdated = new Date();
   }
   next();

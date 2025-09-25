@@ -26,6 +26,13 @@ export interface IAIEnhancement extends Document {
   };
   createdAt: Date;
   updatedAt: Date;
+
+  // Methods
+  getModel(provider: string, model: string): IAIModel | null;
+  getFeature(featureName: string): IAIFeature | null;
+  getCostEstimate(requests: number, tokens: number, model: string): number;
+  isCompliant(regulation: string): boolean;
+  hasCapability(capabilityName: string): boolean;
 }
 
 interface IAIModel {
@@ -926,35 +933,40 @@ AIEnhancementSchema.index({ 'deployment.environment': 1 });
 
 // Virtual fields
 AIEnhancementSchema.virtual('isProductionReady').get(function() {
-  return this.status === 'production' && this.deployment.status === 'deployed';
+  return this.status === 'production' && this.deployment?.status === 'deployed';
 });
 
 AIEnhancementSchema.virtual('hasActiveAlerts').get(function() {
-  return this.deployment.monitoring.alerts.some(alert => alert.status === 'triggered');
+  return this.deployment?.monitoring?.alerts?.some((alert: any) => alert.status === 'triggered') || false;
 });
 
 AIEnhancementSchema.virtual('costEfficiency').get(function() {
-  if (this.usage.total.requests === 0) return 0;
-  return this.usage.total.cost / this.usage.total.requests;
+  const total = this.usage?.total || {} as any;
+  if (total.requests === 0) return 0;
+  return total.cost / total.requests;
 });
 
 AIEnhancementSchema.virtual('modelCount').get(function() {
-  return this.models.filter(model => model.status === 'available').length;
+  if (!this.models) return 0;
+  return this.models.filter((model: any) => model.status === 'available').length;
 });
 
 AIEnhancementSchema.virtual('averageModelLatency').get(function() {
-  if (this.performance.models.length === 0) return 0;
-  const total = this.performance.models.reduce((sum, model) => sum + model.latency, 0);
-  return total / this.performance.models.length;
+  const models = this.performance?.models || [];
+  if (models.length === 0) return 0;
+  const total = models.reduce((sum: number, model: any) => sum + (model.latency || 0), 0);
+  return total / models.length;
 });
 
 // Methods
 AIEnhancementSchema.methods.getModel = function(provider: string, model: string) {
-  return this.models.find(m => m.provider === provider && m.model === model);
+  if (!this.models) return null;
+  return this.models.find((m: any) => m.provider === provider && m.model === model);
 };
 
 AIEnhancementSchema.methods.getFeature = function(featureName: string) {
-  return this.features.find(f => f.name === featureName);
+  if (!this.features) return null;
+  return this.features.find((f: any) => f.name === featureName);
 };
 
 AIEnhancementSchema.methods.getCostEstimate = function(requests: number, tokens: number, model: string) {
@@ -972,32 +984,40 @@ AIEnhancementSchema.methods.isCompliant = function(regulation: string) {
 };
 
 AIEnhancementSchema.methods.hasCapability = function(capabilityName: string) {
-  return this.capabilities.some(cap => cap.name === capabilityName && cap.enabled);
+  if (!this.capabilities) return false;
+  return this.capabilities.some((cap: any) => cap.name === capabilityName && cap.enabled);
 };
 
 // Pre-save middleware
 AIEnhancementSchema.pre('save', function(next) {
   // Update total usage
-  if (this.isModified('usage.daily')) {
-    this.usage.total.requests = this.usage.daily.reduce((sum, day) => sum + day.requests, 0);
-    this.usage.total.tokens = this.usage.daily.reduce((sum, day) => sum + day.tokens, 0);
-    this.usage.total.cost = this.usage.daily.reduce((sum, day) => sum + day.cost, 0);
-    this.usage.total.users = this.usage.daily.reduce((sum, day) => sum + day.users, 0);
+  if (this.isModified('usage.daily') && this.usage?.daily) {
+    if (this.usage.total) {
+      this.usage.total.requests = this.usage.daily.reduce((sum, day) => sum + (day.requests || 0), 0);
+      this.usage.total.tokens = this.usage.daily.reduce((sum, day) => sum + (day.tokens || 0), 0);
+      this.usage.total.cost = this.usage.daily.reduce((sum, day) => sum + (day.cost || 0), 0);
+      this.usage.total.users = this.usage.daily.reduce((sum, day) => sum + (day.users || 0), 0);
+    }
   }
 
   // Update total cost
-  if (this.isModified('cost.byProvider')) {
-    this.cost.total = this.cost.byProvider.reduce((sum, provider) => sum + provider.cost, 0);
+  if (this.isModified('cost.byProvider') && this.cost?.byProvider) {
+    if (this.cost) {
+      this.cost.total = this.cost.byProvider.reduce((sum, provider) => sum + (provider.cost || 0), 0);
+    }
   }
 
   // Update performance metrics
-  if (this.isModified('performance.models')) {
-    const avgLatency = this.performance.models.reduce((sum, model) => sum + model.latency, 0) / this.performance.models.length;
-    const avgAccuracy = this.performance.models.reduce((sum, model) => sum + model.accuracy, 0) / this.performance.models.length;
+  if (this.isModified('performance.models') && this.performance?.models) {
+    const models = this.performance.models;
+    const avgLatency = models.reduce((sum: number, model: any) => sum + (model.latency || 0), 0) / models.length;
+    const avgAccuracy = models.reduce((sum: number, model: any) => sum + (model.accuracy || 0), 0) / models.length;
 
-    this.performance.overall.responseTime = avgLatency;
-    this.performance.overall.successRate = avgAccuracy;
-    this.performance.overall.errorRate = 100 - avgAccuracy;
+    if (this.performance.overall) {
+      this.performance.overall.responseTime = avgLatency;
+      this.performance.overall.successRate = avgAccuracy;
+      this.performance.overall.errorRate = 100 - avgAccuracy;
+    }
   }
 
   next();

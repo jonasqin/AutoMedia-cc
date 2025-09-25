@@ -1,0 +1,175 @@
+# AutoMedia Performance Testing Configuration
+
+config:
+  target: 'http://localhost:3000'
+  phases:
+    - duration: 60
+      arrivalRate: 10
+      name: 'Warm up'
+    - duration: 120
+      arrivalRate: 20
+      rampTo: 50
+      name: 'Load test'
+    - duration: 60
+      arrivalRate: 50
+      name: 'Peak load'
+    - duration: 60
+      arrivalRate: 20
+      rampTo: 10
+      name: 'Cool down'
+
+scenarios:
+  - name: 'Authentication Flow'
+    weight: 20
+    requests:
+      - post:
+          url: '/api/auth/register'
+          json:
+            email: '{{ username }}@example.com'
+            password: 'Password123!'
+            profile:
+              firstName: '{{ firstName }}'
+              lastName: '{{ lastName }}'
+          capture:
+            - json: '$.data.accessToken'
+              as: 'authToken'
+            - json: '$.data.user.id'
+              as: 'userId'
+      - get:
+          url: '/api/auth/me'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+      - post:
+          url: '/api/auth/logout'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+
+  - name: 'Topic Management'
+    weight: 30
+    requests:
+      - get:
+          url: '/api/topics'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+      - post:
+          url: '/api/topics'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+          json:
+            name: 'Performance Test Topic {{ loopIndex }}'
+            keywords: ['perf', 'test', '{{ loopIndex }}']
+            description: 'Topic created during performance testing'
+            weight: '{{ randomInt(1, 10) }}'
+            priority: '{{ randomChoice(["low", "medium", "high"]) }}'
+            settings:
+              updateFrequency: '{{ randomChoice(["15min", "30min", "1hour"]) }}'
+              notificationEnabled: '{{ randomBoolean() }}'
+              autoCollect: true
+
+  - name: 'Content Retrieval'
+    weight: 40
+    requests:
+      - get:
+          url: '/api/content?page={{ randomInt(1, 5) }}&limit=20'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+      - get:
+          url: '/api/content/search?q={{ randomChoice(["AI", "technology", "test", "performance"]) }}'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+      - get:
+          url: '/api/topics/{{ randomTopicId }}/content'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+
+  - name: 'Real-time Features'
+    weight: 10
+    requests:
+      - get:
+          url: '/api/content/recent'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+      - get:
+          url: '/api/stats/overview'
+          headers:
+            Authorization: 'Bearer {{ authToken }}'
+
+variables:
+  usernames:
+    - 'perfuser1'
+    - 'perfuser2'
+    - 'perfuser3'
+    - 'perfuser4'
+    - 'perfuser5'
+  firstNames:
+    - 'John'
+    - 'Jane'
+    - 'Mike'
+    - 'Sarah'
+    - 'David'
+  lastNames:
+    - 'Smith'
+    - 'Johnson'
+    - 'Williams'
+    - 'Brown'
+    - 'Jones'
+  topicIds:
+    - 'topic1'
+    - 'topic2'
+    - 'topic3'
+    - 'topic4'
+    - 'topic5'
+
+defaults:
+  headers:
+    Content-Type: 'application/json'
+    User-Agent: 'AutoMedia-Performance-Test/1.'
+
+processor:
+  - path: 'randomInt'
+    function: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
+  - path: 'randomChoice'
+    function: (array) => array[Math.floor(Math.random() * array.length)]
+  - path: 'randomBoolean'
+    function: () => Math.random() > 0.5
+  - path: 'randomTopicId'
+    function: () => context.vars.topicIds[Math.floor(Math.random() * context.vars.topicIds.length)]
+
+expectations:
+  - maxErrorRate: 5
+  - maxResponseTime: 2000
+  - statusCode: 200
+
+# Custom metrics to track
+metrics:
+  - authLatency:
+      type: 'trend'
+      description: 'Authentication response time'
+      requestNames: ['Authentication Flow']
+  - topicLatency:
+      type: 'trend'
+      description: 'Topic management response time'
+      requestNames: ['Topic Management']
+  - contentLatency:
+      type: 'trend'
+      description: 'Content retrieval response time'
+      requestNames: ['Content Retrieval']
+  - errorRate:
+      type: 'counter'
+      description: 'Total error count'
+  - successRate:
+      type: 'rate'
+      description: 'Success rate percentage'
+
+# Reports configuration
+reporters:
+  - type: 'console'
+    options:
+      summary: true
+      summaryPercentiles: [50, 90, 95, 99]
+  - type: 'json'
+    options:
+      filename: 'performance-report.json'
+  - type: 'html'
+    options:
+      filename: 'performance-report.html'

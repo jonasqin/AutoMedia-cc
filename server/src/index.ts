@@ -19,7 +19,7 @@ import userRoutes from './routes/user';
 import collectionRoutes from './routes/collection';
 import contentRoutes from './routes/content';
 import aiRoutes from './routes/ai';
-import topicRoutes from './routes/topic';
+import topicRoutes from './routes/topics';
 import agentRoutes from './routes/agent';
 import launchRoutes from './routes/launch';
 import subscriptionRoutes from './routes/subscription';

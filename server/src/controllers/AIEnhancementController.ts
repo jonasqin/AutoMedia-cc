@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { AIEnhancement } from '../models/AIEnhancement';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export class AIEnhancementController {
   /**
@@ -234,7 +234,7 @@ export class AIEnhancementController {
           .map(model => ({
             enhancement: enhancement.name,
             enhancementId: enhancement.id,
-            ...model.toObject()
+            ...model
           }))
       );
 
@@ -268,7 +268,7 @@ export class AIEnhancementController {
           enhancement: enhancement.name,
           enhancementId: enhancement.id,
           category: enhancement.category,
-          ...feature.toObject()
+          ...feature
         }))
       );
 

@@ -961,17 +961,19 @@ InternationalConfigSchema.virtual('daysSinceLaunch').get(function() {
 });
 
 InternationalConfigSchema.virtual('isOperational').get(function() {
-  return this.infrastructure.services.status === 'operational';
+  return this.infrastructure?.services?.status === 'operational';
 });
 
 InternationalConfigSchema.virtual('marketingROI').get(function() {
-  const { performance, budget } = this.marketing;
+  const marketing = this.marketing || {} as any;
+  const { performance = {}, budget = {} } = marketing;
   return performance.cost > 0 ? (performance.conversions * 100) / performance.cost : 0;
 });
 
 InternationalConfigSchema.virtual('supportScore').get(function() {
-  const { performance } = this.support;
-  return (performance.satisfaction + performance.availability) / 2;
+  const support = this.support || {} as any;
+  const { performance = {} } = support;
+  return (performance.satisfaction || 0 + performance.availability || 0) / 2;
 });
 
 // Methods
@@ -1002,18 +1004,23 @@ InternationalConfigSchema.pre('save', function(next) {
     let totalConversions = 0;
     let totalCost = 0;
 
-    this.marketing.campaigns.forEach(campaign => {
-      totalReach += campaign.metrics.reach;
-      totalEngagement += campaign.metrics.engagement;
-      totalConversions += campaign.metrics.conversions;
-      totalCost += campaign.metrics.cost;
-    });
+    if (this.marketing?.campaigns) {
+      this.marketing.campaigns.forEach(campaign => {
+        const metrics = campaign.metrics || {} as any;
+        totalReach += metrics.reach || 0;
+        totalEngagement += metrics.engagement || 0;
+        totalConversions += metrics.conversions || 0;
+        totalCost += metrics.cost || 0;
+      });
+    }
 
-    this.marketing.performance.reach = totalReach;
-    this.marketing.performance.engagement = totalEngagement;
-    this.marketing.performance.conversions = totalConversions;
-    this.marketing.performance.cost = totalCost;
-    this.marketing.performance.roi = totalCost > 0 ? (totalConversions * 100) / totalCost : 0;
+    if (this.marketing?.performance) {
+      this.marketing.performance.reach = totalReach;
+      this.marketing.performance.engagement = totalEngagement;
+      this.marketing.performance.conversions = totalConversions;
+      this.marketing.performance.cost = totalCost;
+      this.marketing.performance.roi = totalCost > 0 ? (totalConversions * 100) / totalCost : 0;
+    }
   }
 
   next();

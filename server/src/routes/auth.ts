@@ -1,9 +1,10 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { body, validationResult } from 'express-validator';
 import { authenticateToken, generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 import { User } from '../models';
 import { cacheData, getCachedData, deleteCache } from '../config/redis';
+import { AuthRequest } from '../types';
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.post('/register', [
   body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long'),
   body('firstName').optional().isLength({ max: 50 }).withMessage('First name cannot exceed 50 characters'),
   body('lastName').optional().isLength({ max: 50 }).withMessage('Last name cannot exceed 50 characters'),
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: AuthRequest, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -73,7 +74,7 @@ router.post('/register', [
 router.post('/login', [
   body('email').isEmail().withMessage('Please enter a valid email'),
   body('password').notEmpty().withMessage('Password is required'),
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: AuthRequest, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -179,7 +180,7 @@ router.post('/refresh', asyncHandler(async (req, res) => {
 }));
 
 // Get current user
-router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
+router.get('/me', authenticateToken, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
 
   // Try to get from cache first
@@ -215,7 +216,7 @@ router.put('/profile', authenticateToken, [
   body('firstName').optional().isLength({ max: 50 }),
   body('lastName').optional().isLength({ max: 50 }),
   body('avatar').optional().isURL(),
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: AuthRequest, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -261,7 +262,7 @@ router.put('/settings', authenticateToken, [
   body('defaultAIModel').optional().isIn(['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'claude-2', 'claude-instant', 'gemini-pro', 'gemini-1.5-pro', 'deepseek-chat']),
   body('defaultAgent').optional().isString(),
   body('theme').optional().isIn(['light', 'dark', 'auto']),
-], asyncHandler(async (req, res) => {
+], asyncHandler(async (req: AuthRequest, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
@@ -303,7 +304,7 @@ router.put('/settings', authenticateToken, [
 }));
 
 // Logout
-router.post('/logout', authenticateToken, asyncHandler(async (req, res) => {
+router.post('/logout', authenticateToken, asyncHandler(async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
 
   // Clear cache

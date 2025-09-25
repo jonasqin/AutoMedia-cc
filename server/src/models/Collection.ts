@@ -3,7 +3,7 @@ import { ICollection } from '../types';
 
 const CollectionSchema = new Schema<ICollection>({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: [true, 'User ID is required'],
   },
@@ -84,7 +84,7 @@ const CollectionSchema = new Schema<ICollection>({
   },
   collaborators: [{
     userId: {
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true,
     },
@@ -144,7 +144,7 @@ CollectionSchema.virtual('formattedName').get(function() {
 
 // Virtual for collaborator count
 CollectionSchema.virtual('collaboratorCount').get(function() {
-  return this.collaborators.length;
+  return this.collaborators ? this.collaborators.length : 0;
 });
 
 // Virtual for isOwner
@@ -163,7 +163,8 @@ CollectionSchema.virtual('canEdit').get(function() {
 CollectionSchema.pre('save', async function(next) {
   if (this.isDefault) {
     // If this collection is set as default, unset default for other collections for this user
-    await this.constructor.updateMany(
+    const CollectionModel = this.constructor as any;
+    await CollectionModel.updateMany(
       {
         userId: this.userId,
         _id: { $ne: this._id },

@@ -3,7 +3,7 @@ import { IAgent } from '../types';
 
 const AgentSchema = new Schema<IAgent>({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: [true, 'User ID is required'],
   },
@@ -111,7 +111,7 @@ AgentSchema.index({ createdAt: -1 });
 // Virtual for formatted config
 AgentSchema.virtual('formattedConfig').get(function() {
   return {
-    ...this.config.toObject(),
+    ...this.config,
     // Add any formatting logic here
   };
 });
@@ -119,9 +119,9 @@ AgentSchema.virtual('formattedConfig').get(function() {
 // Virtual for usage statistics
 AgentSchema.virtual('usageStats').get(function() {
   return {
-    totalUsage: this.usageCount,
-    isPopular: this.usageCount > 100,
-    isActive: this.isActive,
+    totalUsage: this.usageCount || 0,
+    isPopular: (this.usageCount || 0) > 100,
+    isActive: this.isActive || false,
   };
 });
 
@@ -129,7 +129,8 @@ AgentSchema.virtual('usageStats').get(function() {
 AgentSchema.pre('save', async function(next) {
   if (this.isDefault) {
     // If this agent is set as default, unset default for other agents of the same type for this user
-    await this.constructor.updateMany(
+    const AgentModel = this.constructor as any;
+    await AgentModel.updateMany(
       {
         userId: this.userId,
         type: this.type,

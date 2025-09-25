@@ -3,9 +3,9 @@ import {
   FeatureRequest,
   FeatureComment,
   FeatureVote,
-  FeaturePriority,
-  UserFeedback
+  FeaturePriority
 } from '../models/FeatureRequest';
+import { UserFeedback } from '../models/UserFeedback';
 
 export class FeatureRequestController {
   /**

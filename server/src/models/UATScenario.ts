@@ -353,25 +353,26 @@ UATScenarioSchema.index({ category: 1, status: 1 });
 
 // Virtual for calculated fields
 UATScenarioSchema.virtual('completionRate').get(function() {
-  if (this.results.length === 0) return 0;
-  const completed = this.results.filter(r => r.overallResult === 'passed').length;
+  if (!this.results || this.results.length === 0) return 0;
+  const completed = this.results.filter((r: any) => r.overallResult === 'passed').length;
   return (completed / this.results.length) * 100;
 });
 
 UATScenarioSchema.virtual('averageSuccessRate').get(function() {
-  if (this.results.length === 0) return 0;
-  const totalSuccessRate = this.results.reduce((sum, r) => sum + r.successRate, 0);
+  if (!this.results || this.results.length === 0) return 0;
+  const totalSuccessRate = this.results.reduce((sum: number, r: any) => sum + (r.successRate || 0), 0);
   return totalSuccessRate / this.results.length;
 });
 
 UATScenarioSchema.virtual('averageRating').get(function() {
-  if (this.results.length === 0) return 0;
-  const totalRating = this.results.reduce((sum, r) => sum + r.feedback.rating, 0);
+  if (!this.results || this.results.length === 0) return 0;
+  const totalRating = this.results.reduce((sum: number, r: any) => sum + (r.feedback?.rating || 0), 0);
   return totalRating / this.results.length;
 });
 
 UATScenarioSchema.virtual('totalIssues').get(function() {
-  return this.results.reduce((total, r) => total + r.issues.length, 0);
+  if (!this.results) return 0;
+  return this.results.reduce((total: number, r: any) => total + (r.issues?.length || 0), 0);
 });
 
 // Pre-save middleware
@@ -466,10 +467,11 @@ UATScenarioSchema.methods.addResult = function(result: Partial<IUATResult>) {
 };
 
 UATScenarioSchema.methods.calculateMetrics = function() {
-  const totalResults = this.results.length;
-  const passedResults = this.results.filter(r => r.overallResult === 'passed').length;
-  const failedResults = this.results.filter(r => r.overallResult === 'failed').length;
-  const partialResults = this.results.filter(r => r.overallResult === 'partial').length;
+  const results = this.results || [];
+  const totalResults = results.length;
+  const passedResults = results.filter((r: any) => r.overallResult === 'passed').length;
+  const failedResults = results.filter((r: any) => r.overallResult === 'failed').length;
+  const partialResults = results.filter((r: any) => r.overallResult === 'partial').length;
 
   return {
     totalResults,

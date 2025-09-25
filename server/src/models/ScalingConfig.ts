@@ -1235,7 +1235,8 @@ ScalingConfigSchema.statics.getAllConfigs = function(environment?: string) {
 // Instance methods
 ScalingConfigSchema.methods.activate = function() {
   // Deactivate other configs for the same environment
-  return this.constructor.updateMany(
+  const Model = this.constructor as any;
+  return Model.updateMany(
     { environment: this.environment, isActive: true, _id: { $ne: this._id } },
     { isActive: false }
   ).then(() => {
@@ -1250,7 +1251,8 @@ ScalingConfigSchema.methods.deactivate = function() {
 };
 
 ScalingConfigSchema.methods.clone = function(newName: string, newVersion: string) {
-  const cloned = new this.constructor({
+  const Model = this.constructor as any;
+  const cloned = new Model({
     name: newName,
     version: newVersion,
     environment: this.environment,

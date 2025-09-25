@@ -24,6 +24,12 @@ export interface IUser extends Document {
     key: string;
     encrypted: boolean;
   }>;
+  isActive: boolean;
+  lastLogin?: Date;
+  emailVerified: boolean;
+  verificationToken?: string;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -97,6 +103,7 @@ export interface IContent extends Document {
   collections: string[];
   publishedAt?: Date;
   collectedAt: Date;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -117,6 +124,9 @@ export interface ITopic extends Document {
     notificationEnabled: boolean;
     autoCollect: boolean;
   };
+  priority: string;
+  emoji?: string;
+  color?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -137,6 +147,15 @@ export interface IAgent extends Document {
   };
   isDefault: boolean;
   usageCount: number;
+  isPublic: boolean;
+  tags: string[];
+  version: number;
+  isActive: boolean;
+  performance: {
+    averageResponseTime: number;
+    successRate: number;
+    userRating?: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -156,7 +175,7 @@ export interface IGeneration extends Document {
     metadata: Record<string, any>;
     sources: string[];
   };
-  model: string;
+  aiModel: string;
   provider: string;
   tokens: {
     input: number;
@@ -167,6 +186,16 @@ export interface IGeneration extends Document {
   duration: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   error?: string;
+  priority: string;
+  scheduledAt?: Date;
+  completedAt?: Date;
+  retryCount: number;
+  maxRetries: number;
+  tags: string[];
+  feedback?: {
+    rating?: number;
+    comment?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -184,6 +213,29 @@ export interface ICollection extends Document {
   };
   contentCount: number;
   isPublic: boolean;
+  icon?: string;
+  color?: string;
+  isDefault?: boolean;
+  tags: string[];
+  settings: {
+    allowSharing: boolean;
+    allowExport: boolean;
+    autoArchive: boolean;
+    retentionDays: number;
+  };
+  collaborators?: Array<{
+    userId: string;
+    role: 'viewer' | 'editor' | 'admin';
+    addedAt: Date;
+  }>;
+  isActive: boolean;
+  lastContentAdded?: Date;
+  statistics: {
+    totalViews: number;
+    totalShares: number;
+    totalExports: number;
+    avgEngagementRate: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

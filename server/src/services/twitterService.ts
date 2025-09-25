@@ -1,7 +1,14 @@
 import { TwitterApi } from 'twitter-api-v2';
 import { Content, User } from '../models';
 import { cacheData, getCachedData, deleteCache } from '../config/redis';
-import { TwitterApiResponse, TrendingTopic } from '../types';
+
+interface TrendingTopic {
+  name: string;
+  url: string;
+  promoted_content: any;
+  query: string;
+  tweet_volume: number;
+}
 
 export class TwitterService {
   private client: TwitterApi;
@@ -59,7 +66,7 @@ export class TwitterService {
       });
 
       if (user.data) {
-        await cacheData(cacheKey, user.data, 3600); // Cache for 1 hour
+        await cacheData(cacheKey, user.data, 3600);
         return user.data;
       }
 
@@ -107,12 +114,8 @@ export class TwitterService {
       const response = await this.appClient.v2.userTimeline(userId, query);
 
       if (response.data?.data) {
-        // Process and transform tweets
         const tweets = await this.processTweetsResponse(response);
-
-        // Cache for 15 minutes
         await cacheData(cacheKey, tweets, 900);
-
         return tweets;
       }
 
@@ -164,10 +167,7 @@ export class TwitterService {
 
       if (response.data?.data) {
         const tweets = await this.processTweetsResponse(response);
-
-        // Cache for 15 minutes
         await cacheData(cacheKey, tweets, 900);
-
         return tweets;
       }
 
@@ -186,10 +186,10 @@ export class TwitterService {
     }
 
     try {
-      const response = await this.appClient.v1.getTrendsPlace(woeId);
+      const response = await this.appClient.v1.trendsByPlace(woeId);
 
-      if (response.data && response.data.length > 0) {
-        const trends = response.data[0].trends.map(trend => ({
+      if (response && response.length > 0 && response[0]) {
+        const trends = response[0].trends?.map((trend: any) => ({
           name: trend.name,
           url: trend.url,
           promoted_content: trend.promoted_content,
@@ -197,9 +197,7 @@ export class TwitterService {
           tweet_volume: trend.tweet_volume,
         }));
 
-        // Cache for 15 minutes
         await cacheData(cacheKey, trends, 900);
-
         return trends;
       }
 
@@ -210,7 +208,7 @@ export class TwitterService {
   }
 
   async monitorUsers(usernames: string[]): Promise<any> {
-    const results = [];
+    const results: any[] = [];
 
     for (const username of usernames) {
       try {
@@ -228,7 +226,7 @@ export class TwitterService {
         console.error(`Failed to monitor user ${username}:`, error);
         results.push({
           username,
-          error: error.message,
+          error: (error as Error).message,
         });
       }
     }
@@ -237,15 +235,14 @@ export class TwitterService {
   }
 
   private async processTweetsResponse(response: any): Promise<any[]> {
-    const tweets = [];
+    const tweets: any[] = [];
     const users = response.data?.includes?.users || [];
     const media = response.data?.includes?.media || [];
 
     for (const tweet of response.data.data) {
       const author = users.find((u: any) => u.id === tweet.author_id);
 
-      // Get media URLs
-      const tweetMedia = [];
+      const tweetMedia: any[] = [];
       if (tweet.attachments && tweet.attachments.media_keys) {
         for (const mediaKey of tweet.attachments.media_keys) {
           const mediaItem = media.find((m: any) => m.media_key === mediaKey);
@@ -259,8 +256,7 @@ export class TwitterService {
         }
       }
 
-      // Extract links
-      const links = [];
+      const links: any[] = [];
       if (tweet.entities && tweet.entities.urls) {
         for (const url of tweet.entities.urls) {
           links.push({
@@ -271,14 +267,12 @@ export class TwitterService {
         }
       }
 
-      // Extract hashtags
-      const hashtags = [];
+      const hashtags: any[] = [];
       if (tweet.entities && tweet.entities.hashtags) {
         hashtags.push(...tweet.entities.hashtags.map((h: any) => h.tag));
       }
 
-      // Extract mentions
-      const mentions = [];
+      const mentions: any[] = [];
       if (tweet.entities && tweet.entities.mentions) {
         mentions.push(...tweet.entities.mentions.map((m: any) => m.username));
       }
@@ -307,7 +301,7 @@ export class TwitterService {
             views: tweet.public_metrics?.impression_count || 0,
           },
           sentiment: {
-            score: 0, // Will be calculated by sentiment analysis service
+            score: 0,
             label: 'neutral',
           },
           topics: [],
@@ -326,11 +320,10 @@ export class TwitterService {
   }
 
   async saveTweetsToDatabase(tweets: any[], userId?: string): Promise<any> {
-    const savedTweets = [];
+    const savedTweets: any[] = [];
 
     for (const tweetData of tweets) {
       try {
-        // Check if tweet already exists
         const existingTweet = await Content.findOne({
           platform: 'twitter',
           platformId: tweetData.platformId,
@@ -357,7 +350,7 @@ export class TwitterService {
 
   async getRateLimitStatus(): Promise<any> {
     try {
-      const rateLimits = await this.appClient.v2.rateLimits();
+      const rateLimits = await this.appClient.v1.get('application/rate_limit_status');
       return rateLimits;
     } catch (error) {
       throw new Error(`Failed to get rate limit status: ${error}`);

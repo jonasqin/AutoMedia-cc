@@ -10,6 +10,9 @@ export interface IFeatureRequest extends Document {
   priority: 'low' | 'medium' | 'high' | 'critical';
   type: 'enhancement' | 'new_feature' | 'bug_fix' | 'improvement' | 'integration';
   status: 'draft' | 'under_review' | 'planned' | 'in_progress' | 'testing' | 'released' | 'declined' | 'duplicate';
+
+  // Methods
+  vote(userId: string, voteType: 'up' | 'down', weight?: number): void;
   impact: {
     users: number;
     business_value: 'low' | 'medium' | 'high' | 'critical';
@@ -75,6 +78,9 @@ export interface IFeatureRequest extends Document {
   };
   createdAt: Date;
   updatedAt: Date;
+
+  // Virtual properties
+  voteScore?: number;
 }
 
 export interface IFeatureComment extends Document {

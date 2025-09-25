@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { AuthRequest } from '../types';
 
 export interface AppError extends Error {
   statusCode?: number;
@@ -69,7 +70,7 @@ export const createError = (message: string, statusCode: number = 500): AppError
 };
 
 export const asyncHandler = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request | AuthRequest, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };

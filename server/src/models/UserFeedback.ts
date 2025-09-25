@@ -326,9 +326,9 @@ UserFeedbackSchema.virtual('urgencyScore').get(function() {
     critical: 4
   };
 
-  return (priorityScore[this.priority] || 1) *
-         (severityScore[this.severity] || 1) *
-         (impactScore[this.impact.business] || 1);
+  return (priorityScore[this.priority as keyof typeof priorityScore] || 1) *
+         (severityScore[this.severity as keyof typeof severityScore] || 1) *
+         (impactScore[this.impact?.business as keyof typeof impactScore] || 1);
 });
 
 UserFeedbackSchema.virtual('isHighPriority').get(function() {

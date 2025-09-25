@@ -191,8 +191,8 @@ BetaUserSchema.virtual('totalContributionScore').get(function() {
     sessionsParticipated: 1
   };
 
-  return Object.entries(this.contributions).reduce((score, [key, value]) => {
-    return score + (value * (weights as any)[key] || 0);
+  return Object.entries(this.contributions || {}).reduce((score, [key, value]) => {
+    return score + ((value as number) * (weights as any)[key] || 0);
   }, 0);
 });
 

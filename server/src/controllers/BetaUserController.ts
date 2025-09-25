@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../types';
 import { BetaUser } from '../models/BetaUser';
 import { UserFeedback } from '../models/UserFeedback';
 import { UATScenario } from '../models/UATScenario';
@@ -7,7 +8,7 @@ export class BetaUserController {
   /**
    * Register new beta user
    */
-  static async registerBetaUser(req: Request, res: Response) {
+  static async registerBetaUser(req: AuthRequest, res: Response) {
     try {
       const {
         email,
@@ -74,7 +75,7 @@ export class BetaUserController {
   /**
    * Get beta user profile
    */
-  static async getBetaUser(req: Request, res: Response) {
+  static async getBetaUser(req: AuthRequest, res: Response) {
     try {
       const { userId } = req.params;
       const requestingUserId = req.user?.id;
@@ -115,7 +116,7 @@ export class BetaUserController {
   /**
    * Update beta user profile
    */
-  static async updateBetaUser(req: Request, res: Response) {
+  static async updateBetaUser(req: AuthRequest, res: Response) {
     try {
       const { userId } = req.params;
       const requestingUserId = req.user?.id;
@@ -167,7 +168,7 @@ export class BetaUserController {
   /**
    * Complete onboarding
    */
-  static async completeOnboarding(req: Request, res: Response) {
+  static async completeOnboarding(req: AuthRequest, res: Response) {
     try {
       const { userId } = req.params;
       const requestingUserId = req.user?.id;
@@ -348,7 +349,7 @@ export class BetaUserController {
   /**
    * Update user activity
    */
-  static async updateActivity(req: Request, res: Response) {
+  static async updateActivity(req: AuthRequest, res: Response) {
     try {
       const { userId } = req.params;
       const requestingUserId = req.user?.id;

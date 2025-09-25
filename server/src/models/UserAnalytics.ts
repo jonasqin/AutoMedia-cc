@@ -51,7 +51,6 @@ export interface IAnalyticsEvent extends Document {
   value?: number;
   metadata?: Record<string, any>;
   timestamp: Date;
-  sessionId: string;
 }
 
 export interface IFeatureUsage extends Document {
@@ -848,3 +847,15 @@ export const BehaviorMetrics = mongoose.model<IBehaviorMetrics>('BehaviorMetrics
 export const ConversionData = mongoose.model<IConversionData>('ConversionData', ConversionDataSchema);
 export const FunnelAnalysis = mongoose.model<IFunnelAnalysis>('FunnelAnalysis', FunnelAnalysisSchema);
 export const RetentionMetrics = mongoose.model<IRetentionMetrics>('RetentionMetrics', RetentionMetricsSchema);
+
+// Export namespace for analytics models
+export const UserAnalytics = {
+  SessionData,
+  PageView,
+  AnalyticsEvent,
+  FeatureUsage,
+  BehaviorMetrics,
+  ConversionData,
+  FunnelAnalysis,
+  RetentionMetrics
+};

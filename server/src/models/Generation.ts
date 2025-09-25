@@ -3,12 +3,12 @@ import { IGeneration } from '../types';
 
 const GenerationSchema = new Schema<IGeneration>({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: [true, 'User ID is required'],
   },
   agentId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'Agent',
   },
   prompt: {
@@ -38,7 +38,7 @@ const GenerationSchema = new Schema<IGeneration>({
       default: {},
     },
     sources: [{
-      type: Schema.Types.ObjectId,
+      type: String,
       ref: 'Content',
     }],
   },

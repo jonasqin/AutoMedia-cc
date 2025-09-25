@@ -812,10 +812,10 @@ MarketingCampaignSchema.pre('save', function(next) {
   this.budget.remaining = this.budget.total - this.budget.spent;
 
   // Update timeline progress
-  if (this.timeline.length > 0) {
+  if (this.timeline && this.timeline.length > 0) {
     const totalPhases = this.timeline.length;
-    const completedPhases = this.timeline.filter(phase => phase.status === 'completed').length;
-    const avgProgress = this.timeline.reduce((sum, phase) => sum + phase.progress, 0) / totalPhases;
+    const completedPhases = this.timeline.filter((phase: any) => phase.status === 'completed').length;
+    const avgProgress = this.timeline.reduce((sum: number, phase: any) => sum + (phase.progress || 0), 0) / totalPhases;
     this.timeline[0].progress = Math.round(avgProgress);
   }
 

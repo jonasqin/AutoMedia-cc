@@ -129,7 +129,7 @@ const ContentSchema = new Schema<IContent>({
     default: false,
   },
   source: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
   },
   tags: [{
@@ -156,9 +156,13 @@ const ContentSchema = new Schema<IContent>({
 
 // Virtual for engagement rate
 ContentSchema.virtual('engagementRate').get(function() {
-  const { likes, retweets, replies } = this.metadata.engagement;
-  // This is a simplified calculation. In a real app, you'd need follower count
-  return likes + retweets + replies;
+  const metadata = this.metadata as any;
+  if (metadata && metadata.engagement) {
+    const { likes, retweets, replies } = metadata.engagement;
+    // This is a simplified calculation. In a real app, you'd need follower count
+    return (likes || 0) + (retweets || 0) + (replies || 0);
+  }
+  return 0;
 });
 
 // Text search index

@@ -3,7 +3,7 @@ import { LaunchConfig } from '../models/LaunchConfig';
 import { Subscription } from '../models/Subscription';
 import { UserAnalytics } from '../models/UserAnalytics';
 import { MarketingCampaign } from '../models/MarketingCampaign';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export class LaunchController {
   /**

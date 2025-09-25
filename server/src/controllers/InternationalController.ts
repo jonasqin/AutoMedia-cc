@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { InternationalConfig } from '../models/InternationalConfig';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export class InternationalController {
   /**

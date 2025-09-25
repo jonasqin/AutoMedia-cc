@@ -3,7 +3,7 @@ import { ITopic } from '../types';
 
 const TopicSchema = new Schema<ITopic>({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: [true, 'User ID is required'],
   },
@@ -95,7 +95,7 @@ TopicSchema.virtual('formattedName').get(function() {
 
 // Virtual for keyword count
 TopicSchema.virtual('keywordCount').get(function() {
-  return this.keywords.length;
+  return this.keywords ? this.keywords.length : 0;
 });
 
 // Pre-save middleware to update lastUpdated

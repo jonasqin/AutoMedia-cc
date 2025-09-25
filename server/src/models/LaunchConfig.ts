@@ -721,21 +721,23 @@ LaunchConfigSchema.index({ 'marketing.campaigns.type': 1 });
 
 // Virtual fields
 LaunchConfigSchema.virtual('progress').get(function() {
-  if (this.phases.length === 0) return 0;
+  if (!this.phases || this.phases.length === 0) return 0;
   const completedPhases = this.phases.filter(phase => phase.status === 'completed').length;
   return Math.round((completedPhases / this.phases.length) * 100);
 });
 
 LaunchConfigSchema.virtual('budgetUtilization').get(function() {
-  return this.budget.total > 0 ? Math.round((this.budget.spent / this.budget.total) * 100) : 0;
+  const budget = this.budget || {} as any;
+  return budget.total > 0 ? Math.round(((budget.spent || 0) / budget.total) * 100) : 0;
 });
 
 LaunchConfigSchema.virtual('activeCampaigns').get(function() {
+  if (!this.marketing?.campaigns) return [];
   return this.marketing.campaigns.filter(campaign => campaign.status === 'active');
 });
 
 LaunchConfigSchema.virtual('isReadyToLaunch').get(function() {
-  return this.status === 'ready' && this.infrastructure.status === 'ready';
+  return this.status === 'ready' && this.infrastructure?.status === 'ready';
 });
 
 // Pre-save middleware

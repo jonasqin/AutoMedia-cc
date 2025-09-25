@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 
 const PlatformConnectionSchema = new Schema({
   userId: {
-    type: Schema.Types.ObjectId,
+    type: String,
     ref: 'User',
     required: [true, 'User ID is required'],
   },
@@ -20,21 +20,12 @@ const PlatformConnectionSchema = new Schema({
   config: {
     apiKey: {
       type: String,
-      required: function() {
-        return ['twitter', 'facebook', 'instagram'].includes(this.platform);
-      },
     },
     apiSecret: {
       type: String,
-      required: function() {
-        return ['twitter', 'facebook', 'instagram'].includes(this.platform);
-      },
     },
     accessToken: {
       type: String,
-      required: function() {
-        return ['twitter', 'facebook', 'instagram', 'tiktok'].includes(this.platform);
-      },
     },
     refreshToken: {
       type: String,
@@ -215,16 +206,20 @@ PlatformConnectionSchema.virtual('isExpired').get(function() {
 
 // Virtual for needsReauth
 PlatformConnectionSchema.virtual('needsReauth').get(function() {
-  return this.status === 'needs_reauth' || this.isExpired;
+  return this.status === 'needs_reauth' || (this.expiresAt && this.expiresAt < new Date());
 });
 
 // Virtual for formatted account info
 PlatformConnectionSchema.virtual('formattedAccount').get(function() {
-  return `${this.accountInfo.displayName} (@${this.accountInfo.username})`;
+  if (this.accountInfo) {
+    return `${this.accountInfo.displayName} (@${this.accountInfo.username})`;
+  }
+  return 'Unknown Account';
 });
 
 // Virtual for monitoring status
 PlatformConnectionSchema.virtual('monitoringStatus').get(function() {
+  if (!this.monitoring) return 'disabled';
   if (!this.monitoring.enabled) return 'disabled';
   if (this.monitoring.nextSyncAt && this.monitoring.nextSyncAt < new Date()) return 'overdue';
   return 'active';
@@ -241,7 +236,7 @@ PlatformConnectionSchema.pre('save', function(next) {
 // Pre-save middleware to handle expiration
 PlatformConnectionSchema.pre('save', function(next) {
   // Set expiration based on platform (typically 30-90 days for most platforms)
-  if (!this.expiresAt && this.config.accessToken) {
+  if (!this.expiresAt && this.config && this.config.accessToken) {
     const expirationDays = {
       twitter: 90,
       facebook: 60,

@@ -334,13 +334,16 @@ SubscriptionSchema.virtual('isOnTrial').get(function() {
 SubscriptionSchema.virtual('daysUntilRenewal').get(function() {
   const now = new Date();
   const renewalDate = this.currentPeriodEnd;
+  if (!renewalDate) return 0;
   const diffTime = renewalDate.getTime() - now.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 });
 
 SubscriptionSchema.virtual('usagePercentage').get(function() {
-  const totalLimit = this.limits.aiGenerations + this.limits.contentPieces + this.limits.apiCalls;
-  const totalUsed = this.usage.aiGenerations.current + this.usage.contentPieces.current + this.usage.apiCalls.current;
+  const limits = this.limits || {} as any;
+  const usage = this.usage || {} as any;
+  const totalLimit = (limits.aiGenerations || 0) + (limits.contentPieces || 0) + (limits.apiCalls || 0);
+  const totalUsed = (usage.aiGenerations?.current || 0) + (usage.contentPieces?.current || 0) + (usage.apiCalls?.current || 0);
   return totalLimit > 0 ? Math.round((totalUsed / totalLimit) * 100) : 0;
 });
 
@@ -363,13 +366,15 @@ SubscriptionSchema.virtual('renewalAmount').get(function() {
   let total = planPrices[this.plan] || 0;
 
   // Add addon costs
-  this.addons.forEach(addon => {
-    if (addon.status === 'active') {
-      if (addon.billingCycle === this.billingCycle || addon.billingCycle === 'one_time') {
-        total += addon.price * addon.quantity;
+  if (this.addons) {
+    this.addons.forEach(addon => {
+      if (addon.status === 'active') {
+        if (addon.billingCycle === this.billingCycle || addon.billingCycle === 'one_time') {
+          total += (addon.price || 0) * (addon.quantity || 1);
+        }
       }
-    }
-  });
+    });
+  }
 
   return total;
 });
@@ -502,7 +507,8 @@ SubscriptionSchema.pre('save', function(next) {
   }
 
   // Auto-cancel if trial ended and no payment method
-  if (this.trialEnd && this.trialEnd < new Date() && !this.paymentMethod.id) {
+  const paymentMethod = this.paymentMethod as any;
+  if (this.trialEnd && this.trialEnd < new Date() && (!paymentMethod || !paymentMethod.id)) {
     this.status = 'cancelled';
   }
 
@@ -524,12 +530,18 @@ SubscriptionSchema.statics.findExpiringSubscriptions = function(daysAhead = 7) {
 };
 
 SubscriptionSchema.statics.findHighUsageSubscriptions = function(usageThreshold = 80) {
+  // Note: Static methods can't access instance limits, using hardcoded values
+  const defaultLimits = {
+    aiGenerations: 1000,
+    contentPieces: 5000,
+    apiCalls: 10000
+  };
   return this.find({
     status: 'active',
     $or: [
-      { 'usage.aiGenerations.current': { $gte: this.limits.aiGenerations * usageThreshold / 100 } },
-      { 'usage.contentPieces.current': { $gte: this.limits.contentPieces * usageThreshold / 100 } },
-      { 'usage.apiCalls.current': { $gte: this.limits.apiCalls * usageThreshold / 100 } }
+      { 'usage.aiGenerations.current': { $gte: defaultLimits.aiGenerations * usageThreshold / 100 } },
+      { 'usage.contentPieces.current': { $gte: defaultLimits.contentPieces * usageThreshold / 100 } },
+      { 'usage.apiCalls.current': { $gte: defaultLimits.apiCalls * usageThreshold / 100 } }
     ]
   });
 };

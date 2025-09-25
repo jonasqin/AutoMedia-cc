@@ -1,5 +1,6 @@
 import { OpenAI } from 'openai';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import mongoose from 'mongoose';
 import { Generation, Agent, User } from '../models';
 import { cacheData, getCachedData, deleteCache } from '../config/redis';
 import { IGeneration } from '../types';
@@ -89,7 +90,7 @@ export class AIService {
         context,
         parameters: { model, temperature, maxTokens },
       },
-      model,
+      aiModel: model,
       provider: this.getProviderFromModel(model),
       status: 'processing',
     });
@@ -139,6 +140,7 @@ export class AIService {
           maxTokens,
           duration: Date.now() - startTime,
         },
+        sources: [],
       };
       generation.tokens = {
         input: inputTokens,
